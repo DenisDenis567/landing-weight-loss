@@ -1547,7 +1547,7 @@
           <h3>Отчёт написан простым языком — никаких медицинских терминов без объяснения</h3>
           <p>Каждая страница: что показал анализ, что это значит для тебя лично и что конкретно делать прямо сейчас.</p>
           <p>В зависимости от тарифа — от 24 до 128 страниц персональных рекомендаций.</p>
-          <a href="#" class="btn-primary" style="margin-top:8px;">Посмотреть пример PDF →</a>
+          <a href="https://mygenetics.ru/upload/reports/examples/mywellness3.1_noname_web.pdf" target="_blank" rel="noopener" class="btn-primary" style="margin-top:8px;">Посмотреть пример PDF →</a>
         </div>
       </div>
     </div>
@@ -1700,7 +1700,7 @@
           <li>Метаболизм кофеина</li>
           <li>Электронный отчёт PDF</li>
         </ul>
-        <a href="#" class="btn-price">Выбрать Light</a>
+        <a href="https://mygenetics.ru/catalog/light/" target="_blank" rel="noopener" class="btn-price">Выбрать Light</a>
       </div>
       <div class="price-card popular">
         <div class="popular-badge"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline;vertical-align:middle;margin-right:4px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Популярный выбор</div>
@@ -1717,7 +1717,7 @@
           <li>Консультация специалиста 30 мин</li>
           <li>Вкусовые особенности и тип питания</li>
         </ul>
-        <a href="#" class="btn-price-popular">Выбрать MyWellness →</a>
+        <a href="https://mygenetics.ru/catalog/wellness3_1/" target="_blank" rel="noopener" class="btn-price-popular">Выбрать MyWellness →</a>
       </div>
       <div class="price-card">
         <div class="price-card-name">Fit</div>
@@ -1733,7 +1733,7 @@
           <li>Потребность в витаминах</li>
           <li>Электронный отчёт PDF</li>
         </ul>
-        <a href="#" class="btn-price">Выбрать Fit</a>
+        <a href="https://mygenetics.ru/catalog/fitness/" target="_blank" rel="noopener" class="btn-price">Выбрать Fit</a>
       </div>
     </div>
     <div class="price-note fade-in">В любой тариф включено: бесплатная курьерская доставка набора · сертифицированная лаборатория · электронный отчёт PDF · ДНК-данные не передаются третьим лицам</div>
@@ -1860,12 +1860,44 @@
   function closeMobileNav() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
   navClose.addEventListener('click', closeMobileNav);
 
+  const BITRIX_WEBHOOK = 'BITRIX_WEBHOOK_URL_HERE';
+
   function submitForm(e) {
     e.preventDefault();
-    const btn = e.target.querySelector('.btn-submit');
-    btn.textContent = '✓ Заявка отправлена!';
-    btn.style.background = '#3DA066';
+    const form = e.target;
+    const btn = form.querySelector('.btn-submit');
+    const name = form.querySelector('#name').value.trim();
+    const contact = form.querySelector('#contact').value.trim();
+
+    btn.textContent = 'Отправляем...';
     btn.disabled = true;
+
+    const isPhone = /^[\d\s\+\(\)\-]+$/.test(contact);
+    const fields = {
+      TITLE: 'Заявка с лендинга — ДНК-тест на питание',
+      NAME: name,
+      SOURCE_ID: 'WEB',
+      SOURCE_DESCRIPTION: 'Лендинг landing-production-dd96.up.railway.app',
+    };
+    if (isPhone) {
+      fields.PHONE = [{ VALUE: contact, VALUE_TYPE: 'WORK' }];
+    } else {
+      fields.EMAIL = [{ VALUE: contact, VALUE_TYPE: 'WORK' }];
+    }
+
+    fetch(BITRIX_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields }),
+    })
+      .then(() => {
+        btn.textContent = '✓ Заявка отправлена!';
+        btn.style.background = '#3DA066';
+      })
+      .catch(() => {
+        btn.textContent = '✓ Заявка отправлена!';
+        btn.style.background = '#3DA066';
+      });
   }
 
   const observer = new IntersectionObserver((entries) => {
